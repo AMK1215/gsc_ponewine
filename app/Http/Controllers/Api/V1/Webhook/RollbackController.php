@@ -13,14 +13,16 @@ use App\Services\Slot\SlotWebhookService;
 use App\Services\Slot\SlotWebhookValidator;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class CancelBetController extends Controller
+class RollbackController extends Controller
 {
     use UseWebhook;
 
-    public function cancelBet(SlotWebhookRequest $request)
+    public function rollback(SlotWebhookRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -37,10 +39,18 @@ class CancelBetController extends Controller
             $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event, true);
 
             foreach ($seamless_transactions as $seamless_transaction) {
+                if ($seamless_transaction->transaction_amount < 0) {
+                    $from = $request->getMember();
+                    $to = User::adminUser();
+                } else {
+                    $from = User::adminUser();
+                    $to = $request->getMember();
+                }
+
                 $this->processTransfer(
-                    User::adminUser(),
-                    $request->getMember(),
-                    TransactionName::Cancel,
+                    $from,
+                    $to,
+                    TransactionName::Rollback,
                     $seamless_transaction->transaction_amount,
                     $seamless_transaction->rate,
                     [

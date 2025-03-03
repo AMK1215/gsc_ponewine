@@ -4,6 +4,8 @@ php artisan make:migration add_order_column_to_game_lists_table --table=game_lis
 php artisan make:migration make_name_and_phone_nullable_in_users_table --table=users
 
 
+php artisan make:migration add_mm_name_to_game_types_table --table=game_types
+
 // to remove laravel log
 php -r "file_put_contents('/var/www/slot_multi_banner_prod/storage/logs/laravel.log', '');"
 // created dev branch for kzt

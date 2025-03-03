@@ -14,13 +14,12 @@ use App\Services\Slot\SlotWebhookValidator;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
-class CancelBetController extends Controller
+class BuyOutController extends Controller
 {
     use UseWebhook;
 
-    public function cancelBet(SlotWebhookRequest $request)
+    public function buyOut(SlotWebhookRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -34,13 +33,13 @@ class CancelBetController extends Controller
 
             $event = $this->createEvent($request);
 
-            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event, true);
+            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
 
             foreach ($seamless_transactions as $seamless_transaction) {
                 $this->processTransfer(
                     User::adminUser(),
                     $request->getMember(),
-                    TransactionName::Cancel,
+                    TransactionName::BuyOut,
                     $seamless_transaction->transaction_amount,
                     $seamless_transaction->rate,
                     [

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1\Webhook;
 use App\Enums\SlotWebhookResponseCode;
 use App\Enums\TransactionName;
 use App\Http\Controllers\Api\V1\Webhook\Traits\UseWebhook;
+use App\Http\Controllers\Api\V1\Webhook\Traits\OptimizedBettingProcess;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Slot\SlotWebhookRequest;
 use App\Models\Transaction;
@@ -14,13 +16,12 @@ use App\Services\Slot\SlotWebhookValidator;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
-class CancelBetController extends Controller
+class BuyInController extends Controller
 {
     use UseWebhook;
 
-    public function cancelBet(SlotWebhookRequest $request)
+    public function buyIn(SlotWebhookRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -34,13 +35,13 @@ class CancelBetController extends Controller
 
             $event = $this->createEvent($request);
 
-            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event, true);
+            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
 
             foreach ($seamless_transactions as $seamless_transaction) {
                 $this->processTransfer(
-                    User::adminUser(),
                     $request->getMember(),
-                    TransactionName::Cancel,
+                    User::adminUser(),
+                    TransactionName::BuyIn,
                     $seamless_transaction->transaction_amount,
                     $seamless_transaction->rate,
                     [
